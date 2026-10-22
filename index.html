@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box Plots in Action | Interactive Scenarios & Live Simulators</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .gradient-header {
+      background: linear-gradient(135deg, #090d16 0%, #1e1b4b 100%);
+    }
+    @keyframes flash-green {
+      0% { background-color: rgba(16, 185, 129, 0.4); }
+      100% { background-color: transparent; }
+    }
+    @keyframes flash-red {
+      0% { background-color: rgba(244, 63, 94, 0.4); }
+      100% { background-color: transparent; }
+    }
+    .flash-up { animation: flash-green 0.6s ease-out; }
+    .flash-down { animation: flash-red 0.6s ease-out; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen antialiased">
+
+  <!-- Header Banner -->
+  <header class="gradient-header py-10 px-6 border-b border-slate-800 text-center relative overflow-hidden">
+    <div class="max-w-5xl mx-auto relative z-10">
+      <span class="bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+        Interactive Data Visualizer
+      </span>
+      <h1 class="text-3xl md:text-5xl font-extrabold mt-3 tracking-tight">
+        Real-World Box Plot Explorer 📊
+      </h1>
+      <p class="text-slate-400 mt-2 text-sm md:text-base max-w-2xl mx-auto">
+        Explore 10 real-world industry scenarios with interactive simulation workbenches, live financial candlestick series, clinical trials, and engineering diagnostics.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Scenario Switcher Buttons -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Select an Industry Scenario
+        </h2>
+        <span class="text-xs text-slate-500">10 Enriched Interactive Cases</span>
+      </div>
+      <div id="scenario-buttons" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- Active Scenario Interactive Display Box -->
+    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+
+      <!-- Scenario Title & Metric Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-700/60">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="case-badge" class="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-indigo-500/20 text-indigo-400">Category</span>
+            <h2 id="case-title" class="text-xl md:text-2xl font-bold text-white">Scenario Title</h2>
+          </div>
+          <p id="case-metric" class="text-sm text-slate-400 mt-1">Measured Unit: <span class="font-mono text-indigo-300 font-semibold">--</span></p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="toggle-custom-btn" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg transition font-medium flex items-center gap-1.5 border border-slate-600">
+            <i class="fa-solid fa-sliders"></i> Edit Raw Dataset
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Data Input Drawer (Collapsible) -->
+      <div id="custom-drawer" class="hidden bg-slate-900/90 border border-slate-700 p-4 rounded-xl my-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs uppercase font-bold text-slate-400">Edit Group B Values (Comma-separated numbers)</h4>
+          <span class="text-[11px] text-indigo-400 font-normal">Recalculates Quartiles in Real-Time</span>
+        </div>
+        <div class="flex gap-2">
+          <input id="custom-input" type="text" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500" placeholder="e.g. 12, 14, 15, 18, 22, 23, 29, 45">
+          <button id="apply-custom-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded-lg font-semibold transition">
+            Apply & Plot
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- DYNAMIC SPECIALIZED DOMAIN WORKBENCH CONTAINER            -->
+      <!-- ========================================================= -->
+      <div id="domain-workbench-panel" class="my-6">
+        <!-- Rendered dynamically via JavaScript according to active scenario -->
+      </div>
+
+      <!-- Comparative Horizontal Box Plot Display -->
+      <div class="my-6">
+        <div class="flex justify-between items-center text-xs text-slate-400 mb-2">
+          <span>Comparative Distribution Canvas</span>
+          <span id="axis-range" class="font-mono text-slate-500">Range: 0 - 100</span>
+        </div>
+
+        <!-- Visual Canvas -->
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-6 space-y-8 relative overflow-hidden">
+
+          <!-- Background Grid Lines -->
+          <div class="absolute inset-0 flex justify-between px-6 pointer-events-none opacity-10">
+            <div class="border-l border-white h-full"></div>
+            <div class="border-l border-white h-full"></div>
+            <div class="border-l border-white h-full"></div>
+            <div class="border-l border-white h-full"></div>
+            <div class="border-l border-white h-full"></div>
+          </div>
+
+          <!-- Group A Plot -->
+          <div>
+            <div class="flex justify-between items-center text-xs mb-2">
+              <span id="label-group-a" class="font-bold text-sky-400">Group A</span>
+              <span id="stats-group-a" class="text-slate-400 font-mono text-[11px]">Min: -- | Q1: -- | Med: -- | Q3: -- | Max: --</span>
+            </div>
+            <div class="relative h-12 flex items-center">
+              <div class="absolute w-full h-0.5 bg-slate-800"></div>
+              <div id="whisker-a" class="absolute h-0.5 bg-sky-400"></div>
+              <div id="min-a" class="absolute w-0.5 h-6 bg-sky-400"></div>
+              <div id="box-a" class="absolute h-9 bg-sky-500/20 border-2 border-sky-400 rounded"></div>
+              <div id="med-a" class="absolute w-1 h-9 bg-white z-10 shadow"></div>
+              <div id="max-a" class="absolute w-0.5 h-6 bg-sky-400"></div>
+              <div id="outliers-a" class="absolute inset-0 flex items-center pointer-events-none"></div>
+            </div>
+          </div>
+
+          <!-- Group B Plot -->
+          <div>
+            <div class="flex justify-between items-center text-xs mb-2">
+              <span id="label-group-b" class="font-bold text-emerald-400">Group B</span>
+              <span id="stats-group-b" class="text-slate-400 font-mono text-[11px]">Min: -- | Q1: -- | Med: -- | Q3: -- | Max: --</span>
+            </div>
+            <div class="relative h-12 flex items-center">
+              <div class="absolute w-full h-0.5 bg-slate-800"></div>
+              <div id="whisker-b" class="absolute h-0.5 bg-emerald-400"></div>
+              <div id="min-b" class="absolute w-0.5 h-6 bg-emerald-400"></div>
+              <div id="box-b" class="absolute h-9 bg-emerald-500/20 border-2 border-emerald-400 rounded"></div>
+              <div id="med-b" class="absolute w-1 h-9 bg-white z-10 shadow"></div>
+              <div id="max-b" class="absolute w-0.5 h-6 bg-emerald-400"></div>
+              <div id="outliers-b" class="absolute inset-0 flex items-center pointer-events-none"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Actionable Insights Breakdown -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="bg-slate-900/60 border border-slate-700/60 p-4 rounded-xl">
+          <h3 class="text-xs uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullseye text-rose-400"></i> The Decision Challenge
+          </h3>
+          <p id="case-challenge" class="text-sm text-slate-300 leading-relaxed">Challenge text...</p>
+        </div>
+
+        <div class="bg-indigo-950/40 border border-indigo-800/40 p-4 rounded-xl">
+          <h3 class="text-xs uppercase font-bold text-indigo-400 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-emerald-400"></i> Box Plot Verdict
+          </h3>
+          <p id="case-verdict" class="text-sm text-indigo-200 leading-relaxed">Verdict text...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Reference Cheat Sheet Table: 10 Real Scenarios -->
+    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-6">
+      <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-indigo-400"></i> Quick Reference: 10 Scenarios at a Glance
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs md:text-sm text-slate-300">
+          <thead class="bg-slate-900 text-slate-400 uppercase text-[11px]">
+            <tr>
+              <th class="p-3">#</th>
+              <th class="p-3">Field</th>
+              <th class="p-3">Comparing A vs. B</th>
+              <th class="p-3">Key Metric</th>
+              <th class="p-3">Decision Enabled</th>
+            </tr>
+          </thead>
+          <tbody id="reference-table" class="divide-y divide-slate-700/50"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // 10 Detailed Real-World Case Scenarios
+    const scenarios = [
+      {
+        id: "pharma",
+        category: "Medicine",
+        title: "Clinical Drug Trial Effectiveness",
+        metric: "Days to Symptom Relief",
+        labelA: "Placebo Control Group",
+        dataA: [7, 9, 10, 11, 12, 12, 13, 14, 15, 17, 22],
+        labelB: "Experimental Compound X",
+        dataB: [3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 12],
+        challenge: "Researchers must prove candidate compound accelerates patient recovery with statistical consistency, without dangerous non-responder outliers.",
+        verdict: "Compound X cuts median recovery from 12 days to 6 days. The tight IQR (4-7 days) confirms efficacy isn't driven by lucky outliers."
+      },
+      {
+        id: "stocks",
+        category: "Finance",
+        title: "Stock Market Volatility & Candlesticks",
+        metric: "Daily Return %",
+        labelA: "Tech Growth ETF (QQQ)",
+        dataA: [-4.2, -1.8, -0.9, -0.4, 0.1, 0.3, 0.7, 1.2, 1.9, 2.5, 3.8, 5.2],
+        labelB: "Utility Dividend ETF (XLU)",
+        dataB: [-0.8, -0.4, -0.2, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.9],
+        challenge: "A portfolio manager needs to assess if tech growth stocks justify their volatility relative to utilities during earnings season.",
+        verdict: "The tech ETF box is 3x wider (IQR = 2.4% vs 0.6%), showing high dispersion and outlier shocks (+5.2%). Utilities offer predictable stability."
+      },
+      {
+        id: "devops",
+        category: "Tech",
+        title: "Cloud API Latency & Reliability",
+        metric: "Response Time (ms)",
+        labelA: "Legacy Monolith Server",
+        dataA: [120, 180, 210, 240, 260, 310, 340, 380, 520, 890, 1450],
+        labelB: "Serverless Microservice API",
+        dataB: [45, 55, 60, 68, 72, 75, 82, 88, 95, 110, 280],
+        challenge: "Engineers must determine whether migrating to serverless architecture actually resolves critical customer timeout complaints.",
+        verdict: "Median latency drops from 310ms to 72ms. The legacy stack suffers extreme right-skewed outliers (>1400ms), whereas the new API reliably clears within 100ms."
+      },
+      {
+        id: "education",
+        category: "Education",
+        title: "Standardized Exam Distribution",
+        metric: "Exam Score (0 - 100)",
+        labelA: "Class A (Traditional Lecture)",
+        dataA: [42, 55, 61, 68, 72, 75, 78, 82, 85, 91, 98],
+        labelB: "Class B (Flipped Interactive)",
+        dataB: [64, 70, 74, 78, 82, 83, 86, 88, 90, 94, 96],
+        challenge: "School heads want to evaluate if an interactive pedagogical method reduces student failure rates and lifts lower-quartile performance.",
+        verdict: "Class B raised the 25th percentile (Q1) from 64 to 78, shrinking the low-end tail and keeping 75% of pupils comfortably above satisfactory marks."
+      },
+      {
+        id: "logistics",
+        category: "Supply Chain",
+        title: "E-Commerce Delivery Times",
+        metric: "Fulfillment Transit (Hours)",
+        labelA: "Regional Ground Courier",
+        dataA: [24, 30, 36, 42, 48, 52, 60, 72, 96, 120, 168],
+        labelB: "Express Air Fleet",
+        dataB: [18, 20, 22, 24, 25, 27, 28, 30, 32, 36, 40],
+        challenge: "Operations needs to determine if paying 20% higher carrier rates prevents customer churn due to delayed parcel shipments.",
+        verdict: "While ground couriers advertise '48-hour delivery', the upper whisker extends to 168 hours (7 days). Express air eliminates severe package delays."
+      },
+      {
+        id: "manufacturing",
+        category: "Engineering",
+        title: "Precision CNC Milling Tolerances",
+        metric: "Tolerance Deviation (Microns)",
+        labelA: "Machine Line 1 (Unserviced)",
+        dataA: [-18, -12, -7, -2, 0, 3, 8, 14, 22, 35],
+        labelB: "Machine Line 2 (Calibrated)",
+        dataB: [-4, -3, -1, 0, 0, 1, 1, 2, 3, 5],
+        challenge: "Factory QC must pinpoint if Machine 1 needs an immediate halt and spindle recalibration to maintain Six Sigma compliance.",
+        verdict: "Line 2 keeps tolerances tightly bound inside [-1, +2] microns. Line 1 has an IQR 4x too wide, causing excessive component rejection."
+      },
+      {
+        id: "realestate",
+        category: "Real Estate",
+        title: "Housing Price per Square Foot",
+        metric: "Price (USD / sq ft)",
+        labelA: "Suburban Green District",
+        dataA: [220, 240, 260, 275, 290, 310, 325, 340, 380, 420],
+        labelB: "Downtown Metro Core",
+        dataB: [450, 520, 610, 680, 750, 820, 910, 1100, 1800, 2400],
+        challenge: "Appraisers need to determine fair market value without being skewed by ultra-luxury multimillionaire penthouse listings.",
+        verdict: "Downtown median ($750) is protected from luxury outlier listings ($1800-$2400), giving buyers and appraisers an honest baseline."
+      },
+      {
+        id: "climate",
+        category: "Environment",
+        title: "Ocean Surface Temperatures",
+        metric: "Temperature (°C)",
+        labelA: "Historic Baseline (1980-2000)",
+        dataA: [14.1, 14.8, 15.2, 15.6, 16.0, 16.3, 16.8, 17.1, 17.5],
+        labelB: "Recent Decade (2015-2025)",
+        dataB: [15.8, 16.4, 17.0, 17.4, 17.9, 18.2, 18.8, 19.5, 20.4],
+        challenge: "Marine biologists are analyzing shifts in coral reef heat stress frequency and anomalous marine heatwaves.",
+        verdict: "The current Q1 (17.0°C) matches the historic Q3, proving that baseline ocean temperatures have climbed an entire quartile tier."
+      },
+      {
+        id: "hr",
+        category: "HR Analytics",
+        title: "Sales Rep Quarterly Commission",
+        metric: "Revenue Generated ($K / Quarter)",
+        labelA: "Inbound SDR Team",
+        dataA: [65, 78, 82, 88, 92, 95, 98, 104, 110, 125],
+        labelB: "Enterprise Outbound Team",
+        dataB: [30, 45, 60, 90, 110, 140, 190, 280, 410],
+        challenge: "Leadership must design fair, motivating commission tiers for distinct sales strategies without penalizing steady contributors.",
+        verdict: "Inbound sales yield predictable, consistent results (narrow box). Enterprise outbound is hyper-skewed with major whale deals ($410K)."
+      },
+      {
+        id: "ux",
+        category: "Product / UX",
+        title: "Checkout Funnel Friction",
+        metric: "Time to Complete Checkout (Sec)",
+        labelA: "Legacy 5-Step Flow",
+        dataA: [85, 110, 130, 145, 160, 185, 210, 240, 380, 490],
+        labelB: "1-Click Express Flow",
+        dataB: [18, 25, 30, 35, 42, 48, 55, 65, 90, 140],
+        challenge: "Growth PMs need statistical proof that 1-click checkout reduces cart drop-off and friction across users.",
+        verdict: "Median checkout dropped by 118 seconds. Over 75% of 1-click users finish under 55 seconds, dramatically reducing checkout drop-off."
+      }
+    ];
+
+    let currentScenario = scenarios[0];
+
+    // Finance State
+    let isBullish = true;
+    let tickerInterval = null;
+    let currentPrice = 448.50;
+    let baseReferencePrice = 445.05;
+    let sessionHigh = 451.20;
+    let sessionLow = 443.10;
+    // Initial candle bar series: array of { open, high, low, close }
+    let candleSeries = [
+      { open: 444.2, high: 445.8, low: 443.9, close: 445.1 },
+      { open: 445.1, high: 446.5, low: 444.8, close: 446.0 },
+      { open: 446.0, high: 446.4, low: 444.7, close: 445.3 },
+      { open: 445.3, high: 447.2, low: 445.0, close: 447.0 },
+      { open: 447.0, high: 448.1, low: 446.3, close: 447.8 },
+      { open: 447.8, high: 449.2, low: 447.1, close: 448.5 }
+    ];
+
+    // Calculate 5-number summary & outliers
+    function calculateStats(arr) {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const n = sorted.length;
+      const getPercentile = (p) => {
+        const index = (n - 1) * p;
+        const lower = Math.floor(index);
+        const upper = Math.ceil(index);
+        const weight = index - lower;
+        return lower === upper ? sorted[lower] : sorted[lower] * (1 - weight) + sorted[upper] * weight;
+      };
+      const q1 = getPercentile(0.25);
+      const med = getPercentile(0.5);
+      const q3 = getPercentile(0.75);
+      const iqr = q3 - q1;
+      const lowerFence = q1 - 1.5 * iqr;
+      const upperFence = q3 + 1.5 * iqr;
+      const regularPoints = sorted.filter(v => v >= lowerFence && v <= upperFence);
+      const outliers = sorted.filter(v => v < lowerFence || v > upperFence);
+
+      return {
+        min: regularPoints[0] ?? sorted[0],
+        q1: Number(q1.toFixed(1)),
+        med: Number(med.toFixed(1)),
+        q3: Number(q3.toFixed(1)),
+        max: regularPoints[regularPoints.length - 1] ?? sorted[n - 1],
+        outliers: outliers.map(v => Number(v.toFixed(1)))
+      };
+    }
+
+    // Render Box Plot
+    function renderPlot(prefix, stats, globalMin, globalMax) {
+      const range = globalMax - globalMin || 1;
+      const toPct = (val) => Math.max(0, Math.min(100, ((val - globalMin) / range) * 100));
+      const minPct = toPct(stats.min);
+      const q1Pct = toPct(stats.q1);
+      const medPct = toPct(stats.med);
+      const q3Pct = toPct(stats.q3);
+      const maxPct = toPct(stats.max);
+
+      document.getElementById(`whisker-${prefix}`).style.left = `${minPct}%`;
+      document.getElementById(`whisker-${prefix}`).style.width = `${Math.max(0, maxPct - minPct)}%`;
+      document.getElementById(`min-${prefix}`).style.left = `${minPct}%`;
+      document.getElementById(`max-${prefix}`).style.left = `${maxPct}%`;
+
+      const box = document.getElementById(`box-${prefix}`);
+      box.style.left = `${q1Pct}%`;
+      box.style.width = `${Math.max(0.5, q3Pct - q1Pct)}%`;
+      document.getElementById(`med-${prefix}`).style.left = `${medPct}%`;
+
+      const outContainer = document.getElementById(`outliers-${prefix}`);
+      outContainer.innerHTML = '';
+      stats.outliers.forEach(outVal => {
+        const dot = document.createElement('div');
+        dot.className = "absolute w-2.5 h-2.5 rounded-full bg-rose-500 border border-white shadow -translate-x-1.5";
+        dot.style.left = `${toPct(outVal)}%`;
+        dot.title = `Outlier: ${outVal}`;
+        outContainer.appendChild(dot);
+      });
+
+      document.getElementById(`stats-group-${prefix}`).innerText = 
+        `Min: ${stats.min} | Q1: ${stats.q1} | Median: ${stats.med} | Q3: ${stats.q3} | Max: ${stats.max}${stats.outliers.length ? ` | Outliers: [${stats.outliers.join(', ')}]` : ''}`;
+    }
+
+    // =========================================================
+    // DYNAMIC WORKBENCH INJECTION PER SCENARIO
+    // =========================================================
+    function renderDomainWorkbench(scenario) {
+      const panel = document.getElementById('domain-workbench-panel');
+
+      if (scenario.id === 'pharma') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-teal-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-teal-500/20 text-teal-300 border border-teal-500/30">Clinical Phase III</span>
+                  <h3 class="text-sm font-bold text-teal-300 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-flask-vial"></i> Clinical Trial Investigator Workbench
+                  </h3>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Simulate patient response distributions under variable compound dosages.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-800 text-xs">
+                  <button id="wb-dose-low" class="px-3 py-1 rounded font-medium text-slate-400 hover:text-white transition">10mg (Low)</button>
+                  <button id="wb-dose-opt" class="px-3 py-1 rounded font-semibold bg-teal-600 text-white transition">25mg (Optimal)</button>
+                  <button id="wb-dose-high" class="px-3 py-1 rounded font-medium text-slate-400 hover:text-white transition">50mg (High)</button>
+                </div>
+                <button id="wb-resample-pts" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-600/30 text-teal-300 border border-teal-500/40 hover:bg-teal-600/50 transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-shuffle"></i> Re-sample Cohort (N=20)
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Median Recovery</span>
+                <span id="med-stat-median" class="text-base font-bold text-teal-400 font-mono">6.0 Days</span>
+                <span class="text-[10px] text-slate-500 block">vs. Placebo: 12.0 Days</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Therapeutic Window (IQR)</span>
+                <span id="med-stat-iqr" class="text-base font-bold text-white font-mono">4.5 - 7.0 Days</span>
+                <span class="text-[10px] text-slate-500 block">Tight central 50%</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Outliers / Non-Responders</span>
+                <span id="med-stat-outliers" class="text-base font-bold text-rose-400 font-mono">1 Patient (12d)</span>
+                <span class="text-[10px] text-slate-500 block">Outside 1.5x IQR upper fence</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] text-slate-400 uppercase block font-semibold">Statistical Efficacy</span>
+                <span class="text-base font-bold text-emerald-400 font-mono">p &lt; 0.001</span>
+                <span class="text-[10px] text-emerald-400/80 block">Statistically Significant</span>
+              </div>
+            </div>
+            <div class="bg-teal-950/20 border border-teal-800/40 rounded-lg p-3 text-xs text-teal-200/90 flex items-start gap-2">
+              <i class="fa-solid fa-circle-info text-teal-400 mt-0.5"></i>
+              <span><strong>Regulatory Insight:</strong> FDA & EMA guidelines evaluate drugs on variance and outliers, not mere averages. If Compound X's $Q3$ is strictly less than Placebo's $Q1$, then over 75% of patients recover faster than the top 75% of control subjects.</span>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('wb-dose-low').onclick = () => setPharmaDose('low');
+        document.getElementById('wb-dose-opt').onclick = () => setPharmaDose('optimal');
+        document.getElementById('wb-dose-high').onclick = () => setPharmaDose('high');
+        document.getElementById('wb-resample-pts').onclick = () => setPharmaDose('optimal');
+
+      } else if (scenario.id === 'stocks') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/80 border border-indigo-500/30 rounded-xl p-6 shadow-xl">
+            <!-- Platform Terminal Banner -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 shadow-inner">
+              <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-sm">
+                    QQQ
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="font-bold text-white text-base">Invesco QQQ Trust</h4>
+                      <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono">NASDAQ</span>
+                      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-0.5">
+                      <span id="terminal-price" class="text-2xl font-black font-mono text-emerald-400">$448.50</span>
+                      <span id="terminal-change-pill" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        ▲ +$3.45 (+0.78%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Live Candlestick Series (Replaces single-line sparkline) -->
+                <div class="flex flex-col items-start lg:items-end">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Live Intraday Candlestick Series</span>
+                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.2 rounded font-mono">1m Bars</span>
+                  </div>
+                  <div id="mini-candlestick-strip" class="flex items-center gap-1.5 h-12 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                    <!-- Dynamic mini candles will be injected here -->
+                  </div>
+                </div>
+
+                <!-- Ticker Controls -->
+                <div class="flex flex-wrap items-center gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-800">
+                  <button id="btn-ticker-toggle" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                    <i class="fa-solid fa-play"></i> <span id="ticker-btn-text">Start Market Feed</span>
+                  </button>
+                  <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                    <button id="btn-bullish" class="px-3 py-1 rounded font-semibold bg-emerald-600 text-white transition">📈 Bullish</button>
+                    <button id="btn-bearish" class="px-3 py-1 rounded font-semibold text-slate-400 hover:text-slate-200 transition">📉 Bearish</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metrics Tape -->
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400">
+                <div>HIGH: <strong id="terminal-high" class="text-slate-200">$451.20</strong></div>
+                <div>LOW: <strong id="terminal-low" class="text-slate-200">$443.10</strong></div>
+                <div>SPREAD: <strong class="text-slate-200">$0.02</strong></div>
+                <div>VOL: <strong class="text-slate-200">48.2M</strong></div>
+                <div>VWAP: <strong id="terminal-vwap" class="text-indigo-300">$447.80</strong></div>
+              </div>
+            </div>
+
+            <!-- Candlestick vs Vertical Box Plot Comparison -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center">
+              <div class="flex items-center justify-center bg-slate-950 p-6 rounded-xl relative h-72 border border-slate-800">
+                <div class="absolute left-1/2 -translate-x-1/2 top-4 bottom-4 border-l border-dashed border-slate-800 pointer-events-none"></div>
+
+                <!-- Candlestick View -->
+                <div class="flex flex-col items-center absolute left-[30%] -translate-x-1/2 h-full justify-center w-24">
+                  <span class="text-[10px] text-slate-500 mb-2 font-mono">FINANCIAL VIEW</span>
+                  <div id="candle-wick-top" class="w-1 h-12 bg-emerald-500 transition-colors"></div>
+                  <div id="candle-body" class="w-12 h-24 bg-emerald-500 hover:bg-emerald-400 rounded-sm cursor-pointer border border-emerald-300 transition-all duration-200 shadow-md shadow-emerald-500/10 flex flex-col justify-between p-1">
+                    <span id="candle-label-top" class="text-[9px] text-emerald-950 font-extrabold text-center block tracking-wide">CLOSE</span>
+                    <span class="text-[8px] text-emerald-950/60 font-bold rotate-90 tracking-widest text-center my-auto">BODY</span>
+                    <span id="candle-label-bottom" class="text-[9px] text-emerald-950 font-extrabold text-center block tracking-wide">OPEN</span>
+                  </div>
+                  <div id="candle-wick-bottom" class="w-1 h-12 bg-emerald-500 transition-colors"></div>
+                </div>
+
+                <!-- Statistical Vertical Box Plot View -->
+                <div class="flex flex-col items-center absolute right-[30%] translate-x-1/2 h-full justify-center w-24">
+                  <span class="text-[10px] text-slate-500 mb-2 font-mono">STATISTICAL VIEW</span>
+                  <div class="w-0.5 h-12 bg-indigo-400 relative">
+                    <div class="absolute top-0 -translate-x-1.5 w-3.5 h-0.5 bg-indigo-400"></div>
+                    <span class="absolute -right-12 top-0 text-[8px] font-mono text-indigo-300">MAX</span>
+                  </div>
+                  <div id="stats-box" class="w-12 h-24 bg-indigo-500/20 hover:bg-indigo-500/30 border-2 border-indigo-400 cursor-pointer transition duration-200 flex flex-col justify-between p-1 relative">
+                    <span id="stats-label-q3" class="text-[9px] text-indigo-300 font-bold text-center block">Q3 (75%)</span>
+                    <div id="stats-median-line" class="absolute w-full h-0.5 bg-white top-1/3 left-0 transition-all"></div>
+                    <span id="stats-label-med" class="text-[8px] text-white font-extrabold z-10 text-center absolute left-0 right-0 top-1/3 -translate-y-1 bg-slate-900/80 rounded py-0.5 scale-90 transition-all">MEDIAN</span>
+                    <span id="stats-label-q1" class="text-[9px] text-indigo-300 font-bold text-center block">Q1 (25%)</span>
+                  </div>
+                  <div class="w-0.5 h-12 bg-indigo-400 relative">
+                    <div class="absolute bottom-0 -translate-x-1.5 w-3.5 h-0.5 bg-indigo-400"></div>
+                    <span class="absolute -right-12 bottom-0 text-[8px] font-mono text-indigo-300">MIN</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Real-Time Text Guide -->
+              <div class="space-y-4">
+                <div id="tooltip-display" class="bg-indigo-950/40 border border-indigo-800/40 p-4 rounded-lg">
+                  <h4 id="tooltip-title" class="text-sm font-bold text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-indigo-400"></i> Hover & Comparison Guide
+                  </h4>
+                  <p id="tooltip-text" class="text-xs text-slate-300 mt-2 leading-relaxed">
+                    Hover over the candlestick elements on the left or the box components on the right to sync their statistical definitions. Currently showing a <strong>Bullish</strong> bar.
+                  </p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-lg text-xs space-y-2">
+                  <p class="text-slate-400"><strong>Why Traders Rely on Box Plots:</strong></p>
+                  <p class="text-slate-300 leading-relaxed">
+                    A candlestick only shows perimeter bounds (Open, High, Low, Close). Transforming transaction volume into a <strong>vertical box plot</strong> identifies the <strong>Median Price</strong> and the <strong>Interquartile Range (IQR)</strong>, showing where 50% of real market transaction liquidity actually settled.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        renderMiniCandlestickSeries();
+        document.getElementById('btn-ticker-toggle').onclick = toggleTicker;
+        document.getElementById('btn-bullish').onclick = () => { isBullish = true; updateCandlestickTheme(); };
+        document.getElementById('btn-bearish').onclick = () => { isBullish = false; updateCandlestickTheme(); };
+        initHoverBridge();
+
+      } else if (scenario.id === 'devops') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-purple-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">System Observability</span>
+                <h3 class="text-sm font-bold text-purple-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-server"></i> Cloud API Traffic Stress Simulator
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-devops-normal" class="px-3 py-1 rounded text-xs font-semibold bg-purple-600 text-white">Normal Traffic (200 RPS)</button>
+                <button id="wb-devops-spike" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Inject 10x Spike (2k RPS)</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">P50 (Median Latency)</span>
+                <span id="devops-p50" class="text-base font-bold text-purple-400 font-mono">72 ms</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">P90 (Upper Quartile)</span>
+                <span id="devops-p90" class="text-base font-bold text-white font-mono">95 ms</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Max Outlier Spike</span>
+                <span id="devops-max" class="text-base font-bold text-rose-400 font-mono">280 ms</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">SLA Compliance (&lt;150ms)</span>
+                <span id="devops-sla" class="text-base font-bold text-emerald-400 font-mono">99.4%</span>
+              </div>
+            </div>
+            <p class="text-xs text-purple-300/80 bg-purple-950/20 border border-purple-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i> Averages mask downtime: When a server hangs, a 1500ms outlier affects real customers while moving the arithmetic mean by only a few percent. Box plots immediately illuminate the extended upper whisker.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-devops-normal').onclick = () => simulateDevopsLoad(false);
+        document.getElementById('wb-devops-spike').onclick = () => simulateDevopsLoad(true);
+
+      } else if (scenario.id === 'education') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-sky-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-sky-500/20 text-sky-300 border border-sky-500/30">Pedagogy Analytics</span>
+                <h3 class="text-sm font-bold text-sky-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-graduation-cap"></i> Instructional Method Assessment
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-edu-flip" class="px-3 py-1 rounded text-xs font-semibold bg-sky-600 text-white">Active Flipped Class</button>
+                <button id="wb-edu-tutoring" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">+ Peer Tutoring Lab</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Q1 Floor (25th Percentile)</span>
+                <span id="edu-q1" class="text-base font-bold text-sky-400 font-mono">78.0 Pts</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Cohort Grade</span>
+                <span id="edu-med" class="text-base font-bold text-white font-mono">83.0 Pts</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Failing Tail (&lt;60 Pts)</span>
+                <span id="edu-fail" class="text-base font-bold text-emerald-400 font-mono">0.0% (Eliminated)</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Interquartile Spread</span>
+                <span id="edu-iqr" class="text-base font-bold text-indigo-300 font-mono">12.0 Pts (Tight)</span>
+              </div>
+            </div>
+            <p class="text-xs text-sky-300/80 bg-sky-950/20 border border-sky-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-lightbulb mr-1"></i> Measuring educational equity: In traditional lectures, high achievers inflate the mean while struggling students are invisible. The box plot proves Class B successfully compressed the failing lower tail.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-edu-flip').onclick = () => simulateEducation(false);
+        document.getElementById('wb-edu-tutoring').onclick = () => simulateEducation(true);
+
+      } else if (scenario.id === 'logistics') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-amber-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">Supply Chain Dispatch</span>
+                <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-truck-fast"></i> Carrier Transit & Delay Simulator
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-log-clear" class="px-3 py-1 rounded text-xs font-semibold bg-amber-600 text-white">Clear Weather</button>
+                <button id="wb-log-blizzard" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Winter Storm Disruption</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Arrival</span>
+                <span id="log-med" class="text-base font-bold text-amber-400 font-mono">27.0 Hrs</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Max Delivery Whisker</span>
+                <span id="log-max" class="text-base font-bold text-white font-mono">40.0 Hrs</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Ground Courier Outliers</span>
+                <span class="text-base font-bold text-rose-400 font-mono">168.0 Hrs (7 Days)</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">48h SLA Guarantee</span>
+                <span id="log-sla" class="text-base font-bold text-emerald-400 font-mono">100% On-Time</span>
+              </div>
+            </div>
+            <p class="text-xs text-amber-300/80 bg-amber-950/20 border border-amber-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-boxes-packing mr-1"></i> E-commerce retention depends on the top whisker, not the median. A customer waiting 7 days generates negative reviews regardless of the 2-day company average.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-log-clear').onclick = () => simulateLogistics(false);
+        document.getElementById('wb-log-blizzard').onclick = () => simulateLogistics(true);
+
+      } else if (scenario.id === 'manufacturing') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-rose-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">Six Sigma QC</span>
+                <h3 class="text-sm font-bold text-rose-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-microchip"></i> CNC Precision & Spindle Calibration Lab
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-mfg-calibrated" class="px-3 py-1 rounded text-xs font-semibold bg-rose-600 text-white">Line 2 (Calibrated)</button>
+                <button id="wb-mfg-wear" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Simulate Tool Wear Drift</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Tolerance Band (IQR)</span>
+                <span id="mfg-iqr" class="text-base font-bold text-rose-400 font-mono">[-1, +2] µm</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Offset</span>
+                <span id="mfg-med" class="text-base font-bold text-white font-mono">0.0 µm</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Line 1 Defect Range</span>
+                <span class="text-base font-bold text-rose-400 font-mono">[-18, +35] µm</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Rejection Scrap Rate</span>
+                <span id="mfg-scrap" class="text-base font-bold text-emerald-400 font-mono">0.02%</span>
+              </div>
+            </div>
+            <p class="text-xs text-rose-300/80 bg-rose-950/20 border border-rose-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-gears mr-1"></i> Quality engineers set automated whisker thresholds. The moment a milling machine's upper whisker crosses $5\,\mu\text{m}$, the production line automatically triggers mechanical re-centering.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-mfg-calibrated').onclick = () => simulateManufacturing(false);
+        document.getElementById('wb-mfg-wear').onclick = () => simulateManufacturing(true);
+
+      } else if (scenario.id === 'realestate') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-emerald-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Valuation Modeling</span>
+                <h3 class="text-sm font-bold text-emerald-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-building"></i> Urban Real Estate Outlier Isolator
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-re-include" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-600 text-white">Full Listings (With Penthouses)</button>
+                <button id="wb-re-filter" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Filter $1800+ Penthouses</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Price / sq ft</span>
+                <span id="re-med" class="text-base font-bold text-emerald-400 font-mono">$750 / sq ft</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Skewed Mean Average</span>
+                <span id="re-mean" class="text-base font-bold text-white font-mono">$984 / sq ft</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median vs Mean Gap</span>
+                <span class="text-base font-bold text-amber-400 font-mono">+$234 Skew</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Isolated Outliers</span>
+                <span id="re-outliers" class="text-base font-bold text-rose-400 font-mono">2 Listings ($1800, $2400)</span>
+              </div>
+            </div>
+            <p class="text-xs text-emerald-300/80 bg-emerald-950/20 border border-emerald-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-house mr-1"></i> A single billionaire penthouse listing drags the statistical average up by 31%, deceiving prospective families. The box plot median provides an impervious anchor for true market value.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-re-include').onclick = () => simulateRealEstate(false);
+        document.getElementById('wb-re-filter').onclick = () => simulateRealEstate(true);
+
+      } else if (scenario.id === 'climate') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Ocean Climatology</span>
+                <h3 class="text-sm font-bold text-cyan-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-water"></i> Marine Heatwave Anomaly Tracker
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-clim-recent" class="px-3 py-1 rounded text-xs font-semibold bg-cyan-600 text-white">Recent Decade (2015-2025)</button>
+                <button id="wb-clim-elnino" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Super El Niño Year (+1.5°C)</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Current Q1 (Lower 25%)</span>
+                <span id="clim-q1" class="text-base font-bold text-cyan-400 font-mono">17.0 °C</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Historic Q3 (1980-2000)</span>
+                <span class="text-base font-bold text-white font-mono">16.8 °C</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Quartile Tier Shift</span>
+                <span class="text-base font-bold text-amber-400 font-mono">+1 Full Quartile</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Coral Bleaching Risk</span>
+                <span id="clim-risk" class="text-base font-bold text-rose-400 font-mono">High (Peak 20.4°C)</span>
+              </div>
+            </div>
+            <p class="text-xs text-cyan-300/80 bg-cyan-950/20 border border-cyan-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-temperature-high mr-1"></i> Statistical definition of global warming: Today's coldest ocean quartile ($Q1$) is warmer than 75% of historic summers ($Q3$). Extreme weather spikes appear directly as red outlier dots.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-clim-recent').onclick = () => simulateClimate(false);
+        document.getElementById('wb-clim-elnino').onclick = () => simulateClimate(true);
+
+      } else if (scenario.id === 'hr') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-blue-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">People Analytics</span>
+                <h3 class="text-sm font-bold text-blue-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-users"></i> Sales Quota & Commission Equity Architect
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-hr-outbound" class="px-3 py-1 rounded text-xs font-semibold bg-blue-600 text-white">Enterprise Outbound</button>
+                <button id="wb-hr-capwhale" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">Cap $410K Whale Outlier</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Rep Revenue</span>
+                <span id="hr-med" class="text-base font-bold text-blue-400 font-mono">$110K</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Arithmetic Average</span>
+                <span id="hr-mean" class="text-base font-bold text-white font-mono">$151K</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Top Whale Outlier</span>
+                <span id="hr-whale" class="text-base font-bold text-rose-400 font-mono">$410K (3.7x Med)</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Team Gini Dispersion</span>
+                <span class="text-base font-bold text-amber-400 font-mono">High Variance</span>
+              </div>
+            </div>
+            <p class="text-xs text-blue-300/80 bg-blue-950/20 border border-blue-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-scale-balanced mr-1"></i> If HR sets sales quotas based on the arithmetic mean ($151K), over 65% of reps will fail because a solitary $410K megadeal distorts the target. Quotas tied to the box plot median ($110K) prevent quota exhaustion.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-hr-outbound').onclick = () => simulateHR(false);
+        document.getElementById('wb-hr-capwhale').onclick = () => simulateHR(true);
+
+      } else if (scenario.id === 'ux') {
+        panel.innerHTML = `
+          <div class="bg-slate-950/70 border border-pink-500/30 rounded-xl p-6 shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-pink-500/20 text-pink-300 border border-pink-500/30">Conversion Optimization</span>
+                <h3 class="text-sm font-bold text-pink-300 uppercase tracking-wider mt-1 flex items-center gap-2">
+                  <i class="fa-solid fa-stopwatch"></i> A/B Funnel Friction & Drop-Off Lab
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="wb-ux-1click" class="px-3 py-1 rounded text-xs font-semibold bg-pink-600 text-white">1-Click Express Flow</button>
+                <button id="wb-ux-autofill" class="px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800">+ Browser Autofill</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 my-4">
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Median Checkout Time</span>
+                <span id="ux-med" class="text-base font-bold text-pink-400 font-mono">48.0 Sec</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Legacy Flow Median</span>
+                <span class="text-base font-bold text-white font-mono">160.0 Sec (-70%)</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Q3 Ceiling (75% Users)</span>
+                <span id="ux-q3" class="text-base font-bold text-emerald-400 font-mono">55.0 Sec</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Friction Abandonment</span>
+                <span id="ux-dropoff" class="text-base font-bold text-emerald-400 font-mono">-42% Drop-off</span>
+              </div>
+            </div>
+            <p class="text-xs text-pink-300/80 bg-pink-950/20 border border-pink-800/30 p-2.5 rounded">
+              <i class="fa-solid fa-cart-shopping mr-1"></i> In multi-step checkout, users experience cognitive fatigue as the upper whisker drags out to 490 seconds. 1-click checkout packs 75% of users under 55 seconds, reducing cart abandonment.
+            </p>
+          </div>
+        `;
+        document.getElementById('wb-ux-1click').onclick = () => simulateUX(false);
+        document.getElementById('wb-ux-autofill').onclick = () => simulateUX(true);
+      }
+    }
+
+    // =========================================================
+    // MINI CANDLESTICK SERIES ENGINE (FINANCE)
+    // =========================================================
+    function renderMiniCandlestickSeries() {
+      const container = document.getElementById('mini-candlestick-strip');
+      if (!container) return;
+
+      const allPrices = candleSeries.flatMap(c => [c.low, c.high]);
+      const minP = Math.min(...allPrices);
+      const maxP = Math.max(...allPrices);
+      const range = (maxP - minP) || 1;
+      const height = 40; // container height
+
+      container.innerHTML = '';
+
+      candleSeries.forEach((c) => {
+        const isGreen = c.close >= c.open;
+        const colorClass = isGreen ? 'bg-emerald-400' : 'bg-rose-500';
+
+        // Calculate positions
+        const highY = height - ((c.high - minP) / range) * height;
+        const lowY = height - ((c.low - minP) / range) * height;
+        const topBodyY = height - ((Math.max(c.open, c.close) - minP) / range) * height;
+        const bottomBodyY = height - ((Math.min(c.open, c.close) - minP) / range) * height;
+        const bodyHeight = Math.max(3, bottomBodyY - topBodyY);
+
+        // Candle Wrapper
+        const candleWrapper = document.createElement('div');
+        candleWrapper.className = "relative w-3 h-full flex flex-col items-center justify-center";
+        candleWrapper.title = `O: $${c.open.toFixed(2)} | H: $${c.high.toFixed(2)} | L: $${c.low.toFixed(2)} | C: $${c.close.toFixed(2)}`;
+
+        // SVG implementation for candle
+        candleWrapper.innerHTML = `
+          <svg class="w-3 h-10 overflow-visible" viewBox="0 0 12 ${height}">
+            <!-- Wick line -->
+            <line x1="6" y1="${highY}" x2="6" y2="${lowY}" stroke="${isGreen ? '#34d399' : '#f43f5e'}" stroke-width="1.2" />
+            <!-- Real Body -->
+            <rect x="1.5" y="${topBodyY}" width="9" height="${bodyHeight}" fill="${isGreen ? '#10b981' : '#f43f5e'}" rx="0.5" />
+          </svg>
+        `;
+        container.appendChild(candleWrapper);
+      });
+    }
+
+    // Candlestick Hover Guides
+    function initHoverBridge() {
+      const tooltipTitle = document.getElementById('tooltip-title');
+      const tooltipText = document.getElementById('tooltip-text');
+      const candle = document.getElementById('candle-body');
+      const statsBox = document.getElementById('stats-box');
+      if (!candle || !statsBox) return;
+
+      candle.onmouseenter = () => {
+        if (isBullish) {
+          tooltipTitle.innerHTML = `<i class="fa-solid fa-square-trend-up text-emerald-400"></i> Bullish Candle Body (Green)`;
+          tooltipText.innerText = "The asset price appreciated. Bottom boundary represents where trading Opened, and the top boundary is where it Closed.";
+        } else {
+          tooltipTitle.innerHTML = `<i class="fa-solid fa-square-trend-down text-rose-400"></i> Bearish Candle Body (Red)`;
+          tooltipText.innerText = "The asset price depreciated. Top boundary represents where trading Opened, and the bottom boundary is where it Closed.";
+        }
+      };
+
+      statsBox.onmouseenter = () => {
+        tooltipTitle.innerHTML = `<i class="fa-solid fa-box text-indigo-400"></i> Statistical IQR Box (Q1 to Q3)`;
+        tooltipText.innerText = "Calculates the boundaries of the middle 50% of trade density. Regardless of price direction, this box isolates where the densest transaction liquidity occurred.";
+      };
+    }
+
+    function updateCandlestickTheme() {
+      const body = document.getElementById('candle-body');
+      const topWick = document.getElementById('candle-wick-top');
+      const bottomWick = document.getElementById('candle-wick-bottom');
+      const labelTop = document.getElementById('candle-label-top');
+      const labelBottom = document.getElementById('candle-label-bottom');
+      const medLine = document.getElementById('stats-median-line');
+      const medLabel = document.getElementById('stats-label-med');
+      if (!body) return;
+
+      if (isBullish) {
+        body.className = "w-12 h-24 bg-emerald-500 hover:bg-emerald-400 rounded-sm cursor-pointer border border-emerald-300 transition-all duration-200 shadow-md shadow-emerald-500/10 flex flex-col justify-between p-1";
+        topWick.className = "w-1 h-12 bg-emerald-500 transition-colors";
+        bottomWick.className = "w-1 h-12 bg-emerald-500 transition-colors";
+        labelTop.innerText = "CLOSE";
+        labelBottom.innerText = "OPEN";
+        medLine.style.top = "33%";
+        medLabel.style.top = "33%";
+        document.getElementById('btn-bullish').className = "px-3 py-1 rounded font-semibold bg-emerald-600 text-white transition";
+        document.getElementById('btn-bearish').className = "px-3 py-1 rounded font-semibold text-slate-400 hover:text-slate-200 transition";
+      } else {
+        body.className = "w-12 h-24 bg-rose-600 hover:bg-rose-500 rounded-sm cursor-pointer border border-rose-400 transition-all duration-200 shadow-md shadow-rose-600/10 flex flex-col justify-between p-1";
+        topWick.className = "w-1 h-12 bg-rose-600 transition-colors";
+        bottomWick.className = "w-1 h-12 bg-rose-600 transition-colors";
+        labelTop.innerText = "OPEN";
+        labelBottom.innerText = "CLOSE";
+        medLine.style.top = "66%";
+        medLabel.style.top = "66%";
+        document.getElementById('btn-bullish').className = "px-3 py-1 rounded font-semibold text-slate-400 hover:text-slate-200 transition";
+        document.getElementById('btn-bearish').className = "px-3 py-1 rounded font-semibold bg-rose-600 text-white transition";
+      }
+    }
+
+    // Financial Live Ticker Loop
+    function toggleTicker() {
+      const btn = document.getElementById('btn-ticker-toggle');
+      const btnText = document.getElementById('ticker-btn-text');
+
+      if (tickerInterval) {
+        clearInterval(tickerInterval);
+        tickerInterval = null;
+        btn.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20";
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Start Market Feed</span>';
+      } else {
+        btn.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition flex items-center gap-1.5 shadow-md shadow-rose-600/20";
+        btn.innerHTML = '<i class="fa-solid fa-stop"></i> <span>Pause Market Feed</span>';
+
+        tickerInterval = setInterval(() => {
+          const delta = (Math.random() - 0.48) * 1.35;
+          const prevPrice = currentPrice;
+          currentPrice = Number((currentPrice + delta).toFixed(2));
+
+          if (currentPrice > sessionHigh) sessionHigh = currentPrice;
+          if (currentPrice < sessionLow) sessionLow = currentPrice;
+
+          // Build new candlestick into the series
+          const openP = prevPrice;
+          const closeP = currentPrice;
+          const highP = Number((Math.max(openP, closeP) + Math.random() * 0.4).toFixed(2));
+          const lowP = Number((Math.min(openP, closeP) - Math.random() * 0.4).toFixed(2));
+          candleSeries.push({ open: openP, high: highP, low: lowP, close: closeP });
+          if (candleSeries.length > 14) candleSeries.shift();
+
+          const netChange = Number((currentPrice - baseReferencePrice).toFixed(2));
+          const pctChange = Number(((netChange / baseReferencePrice) * 100).toFixed(2));
+          isBullish = netChange >= 0;
+
+          // Update Trading Terminal Screen
+          const priceEl = document.getElementById('terminal-price');
+          priceEl.innerText = `$${currentPrice.toFixed(2)}`;
+          priceEl.className = `text-2xl font-black font-mono transition-colors ${isBullish ? 'text-emerald-400 flash-up' : 'text-rose-400 flash-down'}`;
+
+          const pillEl = document.getElementById('terminal-change-pill');
+          if (isBullish) {
+            pillEl.innerText = `▲ +$${netChange.toFixed(2)} (+${pctChange}%)`;
+            pillEl.className = "text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+          } else {
+            pillEl.innerText = `▼ -$${Math.abs(netChange).toFixed(2)} (${pctChange}%)`;
+            pillEl.className = "text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30";
+          }
+
+          document.getElementById('terminal-high').innerText = `$${sessionHigh.toFixed(2)}`;
+          document.getElementById('terminal-low').innerText = `$${sessionLow.toFixed(2)}`;
+          document.getElementById('terminal-vwap').innerText = `$${(currentPrice - 0.35).toFixed(2)}`;
+
+          renderMiniCandlestickSeries();
+          updateCandlestickTheme();
+
+          // Feed into group A dataset dynamically
+          const simulatedReturns = candleSeries.map(c => Number(((c.close - baseReferencePrice) / baseReferencePrice * 100).toFixed(2)));
+          currentScenario.dataA = simulatedReturns;
+          
+          const statsA = calculateStats(currentScenario.dataA);
+          const statsB = calculateStats(currentScenario.dataB);
+          const combined = [...currentScenario.dataA, ...currentScenario.dataB];
+          let minVal = Math.min(...combined);
+          let maxVal = Math.max(...combined);
+          const padding = (maxVal - minVal) * 0.08 || 1;
+          renderPlot('a', statsA, Math.floor(minVal - padding), Math.ceil(maxVal + padding));
+          renderPlot('b', statsB, Math.floor(minVal - padding), Math.ceil(maxVal + padding));
+        }, 950);
+      }
+    }
+
+    // =========================================================
+    // SCENARIO SIMULATION WORKBENCH LOGIC
+    // =========================================================
+    function setPharmaDose(dose) {
+      let baseCenter = 6;
+      let spread = 1.2;
+      if (dose === 'low') { baseCenter = 9; spread = 2.0; }
+      if (dose === 'high') { baseCenter = 4.5; spread = 1.0; }
+
+      const newCohort = [];
+      for (let i = 0; i < 11; i++) {
+        const val = Math.max(2, Math.round(baseCenter + (Math.random() - 0.5) * (spread * 4)));
+        newCohort.push(val);
+      }
+      if (Math.random() > 0.4) newCohort.push(baseCenter + 7);
+      newCohort.sort((a, b) => a - b);
+      currentScenario.dataB = newCohort;
+      refreshStatsAndPlots();
+    }
+
+    function simulateDevopsLoad(isSpike) {
+      if (isSpike) {
+        currentScenario.dataB = [95, 120, 140, 180, 240, 310, 480, 720, 1200, 1850];
+      } else {
+        currentScenario.dataB = [45, 55, 60, 68, 72, 75, 82, 88, 95, 110, 280];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateEducation(tutoring) {
+      if (tutoring) {
+        currentScenario.dataB = [75, 78, 80, 84, 86, 88, 90, 92, 95, 98];
+      } else {
+        currentScenario.dataB = [64, 70, 74, 78, 82, 83, 86, 88, 90, 94, 96];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateLogistics(storm) {
+      if (storm) {
+        currentScenario.dataB = [26, 30, 34, 38, 44, 48, 54, 62, 78, 92];
+      } else {
+        currentScenario.dataB = [18, 20, 22, 24, 25, 27, 28, 30, 32, 36, 40];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateManufacturing(worn) {
+      if (worn) {
+        currentScenario.dataB = [-8, -6, -3, 0, 2, 4, 7, 11, 16, 24];
+      } else {
+        currentScenario.dataB = [-4, -3, -1, 0, 0, 1, 1, 2, 3, 5];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateRealEstate(filtered) {
+      if (filtered) {
+        currentScenario.dataB = [450, 520, 610, 680, 750, 820, 910, 1050, 1150];
+      } else {
+        currentScenario.dataB = [450, 520, 610, 680, 750, 820, 910, 1100, 1800, 2400];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateClimate(elnino) {
+      if (elnino) {
+        currentScenario.dataB = [17.2, 17.8, 18.4, 18.9, 19.4, 19.8, 20.5, 21.3, 22.8];
+      } else {
+        currentScenario.dataB = [15.8, 16.4, 17.0, 17.4, 17.9, 18.2, 18.8, 19.5, 20.4];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateHR(cap) {
+      if (cap) {
+        currentScenario.dataB = [30, 45, 60, 90, 110, 140, 170, 190, 210];
+      } else {
+        currentScenario.dataB = [30, 45, 60, 90, 110, 140, 190, 280, 410];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function simulateUX(autofill) {
+      if (autofill) {
+        currentScenario.dataB = [12, 16, 20, 24, 28, 32, 36, 42, 50, 68];
+      } else {
+        currentScenario.dataB = [18, 25, 30, 35, 42, 48, 55, 65, 90, 140];
+      }
+      refreshStatsAndPlots();
+    }
+
+    function refreshStatsAndPlots() {
+      const statsA = calculateStats(currentScenario.dataA);
+      const statsB = calculateStats(currentScenario.dataB);
+      const combinedAll = [...currentScenario.dataA, ...currentScenario.dataB];
+      let minVal = Math.min(...combinedAll);
+      let maxVal = Math.max(...combinedAll);
+      const padding = (maxVal - minVal) * 0.08 || 1;
+      minVal = Math.floor(minVal - padding);
+      maxVal = Math.ceil(maxVal + padding);
+
+      document.getElementById('axis-range').innerText = `Scale: ${minVal} to ${maxVal} (${currentScenario.metric})`;
+      renderPlot('a', statsA, minVal, maxVal);
+      renderPlot('b', statsB, minVal, maxVal);
+    }
+
+    // Load Scenario
+    function loadScenario(scenario) {
+      currentScenario = scenario;
+
+      document.getElementById('case-badge').innerText = scenario.category;
+      document.getElementById('case-title').innerText = scenario.title;
+      document.getElementById('case-metric').innerHTML = `Measured Unit: <span class="font-mono text-indigo-300 font-semibold">${scenario.metric}</span>`;
+      document.getElementById('label-group-a').innerText = scenario.labelA;
+      document.getElementById('label-group-b').innerText = scenario.labelB;
+      document.getElementById('case-challenge').innerText = scenario.challenge;
+      document.getElementById('case-verdict').innerText = scenario.verdict;
+
+      // Render the dedicated workbench
+      renderDomainWorkbench(scenario);
+
+      document.getElementById('custom-input').value = scenario.dataB.join(', ');
+      refreshStatsAndPlots();
+
+      // Highlight active scenario pill
+      document.querySelectorAll('.scenario-btn').forEach(btn => {
+        if (btn.dataset.id === scenario.id) {
+          btn.className = "scenario-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow";
+        } else {
+          btn.className = "scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700";
+        }
+      });
+    }
+
+    // Application Initialization
+    function init() {
+      const btnContainer = document.getElementById('scenario-buttons');
+      const tableBody = document.getElementById('reference-table');
+
+      scenarios.forEach((sc, index) => {
+        const btn = document.createElement('button');
+        btn.className = "scenario-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700";
+        btn.dataset.id = sc.id;
+        btn.innerText = `${index + 1}. ${sc.title.split(' (')[0].split(' &')[0]}`;
+        btn.onclick = () => loadScenario(sc);
+        btnContainer.appendChild(btn);
+
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-800/40 cursor-pointer transition";
+        row.onclick = () => loadScenario(sc);
+        row.innerHTML = `
+          <td class="p-3 font-mono text-slate-500 font-bold">${index + 1}</td>
+          <td class="p-3 font-semibold text-indigo-300">${sc.category}</td>
+          <td class="p-3 text-slate-200">${sc.labelA} <span class="text-slate-500">vs</span> ${sc.labelB}</td>
+          <td class="p-3 font-mono text-slate-400">${sc.metric}</td>
+          <td class="p-3 text-slate-300">${sc.verdict.slice(0, 75)}...</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Drawer toggle
+      document.getElementById('toggle-custom-btn').onclick = () => {
+        document.getElementById('custom-drawer').classList.toggle('hidden');
+      };
+
+      // Custom Dataset Apply
+      document.getElementById('apply-custom-btn').onclick = () => {
+        const raw = document.getElementById('custom-input').value;
+        const parsed = raw.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+        if (parsed.length < 5) {
+          alert('Please enter at least 5 valid numbers to compute quartiles.');
+          return;
+        }
+        currentScenario.dataB = parsed;
+        refreshStatsAndPlots();
+      };
+
+      // Start with Clinical Trial (Medicine #1)
+      loadScenario(scenarios[0]);
+    }
+
+    init();
+  </script>
+</body>
+</html>
